@@ -49,6 +49,7 @@ using namespace PRT;
 class Registrator
 {
 public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW   //to fix the aligned error
     // Constants
     static const std::string DEFAULT_registration_technique;
     static const double DEFAULT_residual_threshold;
