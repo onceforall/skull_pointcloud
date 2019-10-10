@@ -8,6 +8,7 @@
 
 #include "Registrator.hpp"
 
+const bool verbose=true;
 // Commandline Flags
 const std::string Registrator::DEFAULT_registration_technique("both");
 const double Registrator::DEFAULT_residual_threshold(0.1);
@@ -199,8 +200,8 @@ void Registrator::computeNormals() {
             s_norm_estimation.setInputCloud (s_cloud_);
             s_norm_estimation.compute (*s_cloud_normals_);
             
-            if(FLAGS_verbose) {
-                std::cout << "Computed source cloud normals (" << s_cloud_normals_->size() << ")" << std::endl;
+            if(verbose) {
+            std::cout << "Computed source cloud normals (" << s_cloud_normals_->size() << ")" << std::endl;
             }
             
         }
@@ -213,7 +214,7 @@ void Registrator::computeNormals() {
             t_norm_estimation.setInputCloud (t_cloud_);
             t_norm_estimation.compute (*t_cloud_normals_);
             
-            if(FLAGS_verbose) {
+            if(verbose) {
                 std::cout << "Computed target cloud normals (" << t_cloud_normals_->size() << ")" << std::endl;
             }
         }
@@ -233,14 +234,14 @@ void Registrator::extractKeypoints() {
     subsampling.setInputCloud (s_cloud_);
     subsampling.filter (*s_cloud_keypoints_);
     
-    if(FLAGS_verbose) {
+    if(verbose) {
         std::cout << "Subsampled source cloud from " << s_cloud_->size() << " -> " << s_cloud_keypoints_->size() << std::endl;
     }
 
     subsampling.setInputCloud(t_cloud_);
     subsampling.filter(*t_cloud_keypoints_);
     
-    if(FLAGS_verbose) {
+    if(verbose) {
         std::cout << "Subsampled target cloud from " << t_cloud_->size() << " -> " << t_cloud_keypoints_->size() << std::endl;
     }
 }
@@ -263,7 +264,7 @@ void Registrator::computeDescriptors() {
             s_shot.setSearchSurface (s_cloud_);
             s_shot.compute (*s_cloud_descriptors_);
             
-            if(FLAGS_verbose) {
+            if(verbose) {
                 std::cout << "Computed " << s_cloud_descriptors_->size() << " descriptors on source cloud keypoints" << std::endl;
             }
             
@@ -279,7 +280,7 @@ void Registrator::computeDescriptors() {
             t_shot.setSearchSurface (t_cloud_);
             t_shot.compute (*t_cloud_descriptors_);
             
-            if(FLAGS_verbose) {
+            if(verbose) {
                 std::cout << "Computed " << t_cloud_descriptors_->size() << " descriptors on target cloud keypoints" << std::endl;
             }
         }
@@ -312,7 +313,7 @@ void Registrator::findCorrespondences() {
         }
     }
     
-    if(FLAGS_verbose) {
+    if(verbose) {
         std::cout << "Found " << correspondences_->size() << " correspondences" << std::endl;
     }
     
@@ -353,7 +354,7 @@ void Registrator::computeCorrespondenceBasedTransformation() {
     transformation_estimation.estimateRigidTransformation (*s_cloud_keypoints_,
                                            *t_cloud_keypoints_, *correspondences_, correspondence_T_);
     
-    if(FLAGS_verbose) {
+    if(verbose) {
         std::cout << "Estimated correspondence-based transformation:" << std::endl;
         util::print4x4Matrix (correspondence_T_);
     }
@@ -375,13 +376,13 @@ void Registrator::ICPBasedRegistration() {
     if (is_correspondence_matching_complete_) {
         icp.align(*r_cloud_, correspondence_T_);
     
-        if(FLAGS_verbose)
+        if(verbose)
             std::cout << "Estimated combined correspondence/ICP-based transformation:" << std::endl;
     }
     else {
         icp.align(*r_cloud_);
         
-        if(FLAGS_verbose)
+        if(verbose)
             std::cout << "Estimated ICP-based transformation:" << std::endl;
     }
     
@@ -477,7 +478,7 @@ void Registrator::computeResiduals() {
         }
     }
     
-    if(FLAGS_verbose)
+    if(verbose)
         std::cout << "Computed source -> target cloud residuals" << std::endl;
 }
 
