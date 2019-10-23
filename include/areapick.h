@@ -14,12 +14,17 @@
 #include <fstream>
 #include <algorithm>
 #include <time.h>
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <vector>
 
 
 using namespace std;
-
+using namespace cv;
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
+
 
 class AreaPick
 {
@@ -51,7 +56,8 @@ public:
 	~Pointspick(){}
 	void loadInputcloud(string inputcloudfile);
 	void stl_ply(string stl_path,string ply_path);
-	void simpleViewer();
+	void simpleViewer(string inputcloudfile);
+	
 protected:
 	void pp_callback(const pcl::visualization::PointPickingEvent& event, void*);
 private:

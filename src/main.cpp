@@ -23,6 +23,7 @@
 #include "Registrator.hpp"
 #include "Visualizer.hpp"
 #include "areapick.h"
+#include "coords_rcg.h"
 
 // GFLAGS
 #include <gflags/gflags.h>
@@ -43,7 +44,10 @@ DEFINE_bool(no_parallel, false, "run single-threaded");
 using namespace PRT;
 
 //int main (int argc, char* argv[]) {
-int main () {  
+int main () { 
+    string pic="/home/yons/PointCloudRegistrationTool/data/coords_rcg/识别图+模型3.bmp";
+    //vector<Vec3f> coords=getcoords(pic);
+ 
     std::string usage_message = "\nUsage:\n\n1. ./point_cloud_registration_tool [options] <source_point_cloud> <target_point_cloud>\n2. ./point_cloud_registration_tool [options] --batch_file <batch_filepath>\n\nA batch file is a two-column CSV. First column: source point cloud filepaths, second column: target point cloud filepaths.\n\nSee --help for optional arguments\n";
     //gflags::SetUsageMessage(usage_message);
     
@@ -104,19 +108,24 @@ int main () {
         filepair_t pair;
         //pair.sourcefile = argv[1];
         //pair.targetfile = argv[2];
-        pair.sourcefile = "/home/yons/File/kinect_icp/data/79.ply";;
+        pair.sourcefile = pic.substr(0,pic.find_last_of('.'))+".ply";
         pair.targetfile = "/home/yons/File/kinect_icp/data/simplify_Segment_picked.ply";
         filepairs = FilepairVectorPtr(new FilepairVector());
         filepairs->push_back(pair);
         
     }
 
-    string inputfilename = "/home/yons/File/kinect_icp/data/77.ply";
+    string inputfilename = pic.substr(0,pic.find_last_of('.'))+".ply";
 	string targetfilename = "/home/yons/File/kinect_icp/data/simplify_Segment.stl"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;
+    Pointspick inputpointspick;
+    inputpointspick.loadInputcloud(inputfilename);
+    inputpointspick.simpleViewer(inputfilename);
+    //writetofile(inputfilename.substr(0,inputfilename.find_last_of('.')).append("_pickedpoints.ply"));
 
+    
     inputareapick.loadInputcloud(inputfilename);
     inputareapick.simpleViewer(inputfilename);
     targetareapick.loadInputcloud(targetfilename);

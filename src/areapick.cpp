@@ -8,12 +8,16 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <opencv2/core/types.hpp>
+#include <fstream>
+
+
 
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
+
 int screen_width=2560;
 int screen_height=1080;
+
 /*
 void closeviewer(const pcl::visualization::KeyboardEvent& event, void* obj) {
     
@@ -51,13 +55,15 @@ AreaPick::AreaPick()
 }
 void AreaPick::loadInputcloud(string inputcloudfile)
 {
+	static int cnt=0;
+	ofstream outfile("/home/yons/PointCloudRegistrationTool/data/coords.txt");
 	string filetype = inputcloudfile.substr(inputcloudfile.find_last_of('.'), inputcloudfile.size());
 	if (filetype == ".pcd")
 	{
 		if (pcl::io::loadPCDFile(inputcloudfile, *inputcloud) == -1)
 		{
 			cout << "Can't load pointcloud from " + inputcloudfile << endl;
-			return;
+			return ;
 		}
 	}
 	else if (filetype == ".ply")
@@ -65,7 +71,7 @@ void AreaPick::loadInputcloud(string inputcloudfile)
 		if (pcl::io::loadPLYFile(inputcloudfile, *inputcloud) == -1)
 		{
 			cout << "Can't load pointcloud from " + inputcloudfile << endl;
-			return;
+			return ;
 		}
 	}
 	else if(filetype==".stl")
@@ -79,7 +85,27 @@ void AreaPick::loadInputcloud(string inputcloudfile)
 		}
 		std::cout<<"target cloud size: "<<inputcloud->size()<<std::endl;
 	}
-	return;
+#if 0
+	// for(auto p:inputcloud->points)
+	// 	outfile<<p.x<<' '<<p.y<<' '<<p.z<<endl;
+	if(cnt!=3)
+		for(int i=0;i<3;i++)
+		{
+			for(int j=0;j<inputcloud->size();j++)
+			{
+				if(abs(inputcloud->points[j].x/inputcloud->points[j].y)==abs(coords[i][0]-640/coords[i][1]-512))
+				{
+					coords[i][2]=inputcloud->points[j].z;
+					cout<<coords[i][0]<<' '<<coords[i][1]<<' '<<coords[i][2]<<endl;
+					outfile<<coords[i][0]<<' '<<coords[i][1]<<' '<<coords[i][2]<<endl;
+					cnt++;
+					break;
+				}	
+			}
+		}
+#endif
+	//if(cnt==3) return 1;
+	return ;
 }
 
 void AreaPick::stl_ply(string stl_path,string ply_path)
@@ -432,7 +458,7 @@ void Pointspick::stl_ply(string stl_path,string ply_path)
 	cout << "All Time: " << totaltime << "ms\n";
 	return;
 }
-void Pointspick::simpleViewer()
+void Pointspick::simpleViewer(string inputcloudfile)
 {
 	//visualizer
 	viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer(cloudName));
@@ -446,11 +472,25 @@ void Pointspick::simpleViewer()
 		viewer->spinOnce();
 		//boost::this_thread::sleep(boost::posix_time::microseconds(100000));
 	}
+	std::ofstream outFile;
+    //打开文件
+    outFile.open("/home/yons/PointCloudRegistrationTool/data/coords_rcg/coords.txt");
+    
+    for(auto p:clicked_points_3d->points)
+	{
+		cout<<p.x<<' '<<p.y<<' '<<p.z<<endl;
+		outFile<<p.x<<' '<<p.y<<' '<<p.z<<endl;
+	}
+		
+    //关闭文件
+    outFile.close();
+	pcl::io::savePLYFileASCII(inputcloudfile.substr(0,inputcloudfile.find_last_of('.')).append("_pickedpoints.ply"), *clicked_points_3d);
 	return;
 }
 
 void Pointspick::pp_callback(const pcl::visualization::PointPickingEvent& event, void*)
 {
+	
 	if (event.getPointIndex() == -1)
 		return;
 	float x, y, z;
@@ -458,11 +498,12 @@ void Pointspick::pp_callback(const pcl::visualization::PointPickingEvent& event,
 	std::cout << "Point coordinate ( " << x << ", " << y << ", " << z << ")" << std::endl;
 	clicked_points_3d->points.push_back(pcl::PointXYZ(x, y, z));
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> red(clicked_points_3d, 255, 0, 0);
-	std::stringstream ss;
-	ss << num++;
-	ss >> cloudName;
-	cloudName += "_cloudName";
+	
+	num++;
+	cloudName =to_string(num)+"_cloudName";
+
 	viewer->addPointCloud(clicked_points_3d, red, cloudName);
 	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, cloudName);
 	return;
 }
+

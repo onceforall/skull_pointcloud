@@ -7,6 +7,8 @@
  */
 
 #include "Visualizer.hpp"
+extern int screen_width;
+extern int screen_height;
 
 void keyboardEventOccurred (const pcl::visualization::KeyboardEvent& event, void* obj) {
     
@@ -37,7 +39,7 @@ Visualizer::Visualizer(const std::string &name) {
     viewer_ = pcl::visualization::PCLVisualizer::Ptr(new pcl::visualization::PCLVisualizer(name));
     viewer_->setBackgroundColor(0,0,0);
     viewer_->setCameraPosition (-7.5, 0, 7.5, 0, 0, 1, 0);
-    viewer_->setSize (1024, 768);
+    viewer_->setSize (screen_width, screen_height);
     viewer_->registerKeyboardCallback (&keyboardEventOccurred, this);
     viewer_->setShowFPS(false);
     
