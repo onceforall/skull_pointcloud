@@ -32,7 +32,7 @@ DECLARE_bool(help);
 DEFINE_bool(h, false, "Show help");
 DEFINE_bool(gui, true, "launch GUI after registration");
 DEFINE_string(batch_file, "", "path to batch processing file");
-DEFINE_string(transformation_matrix_filepath, "[source_filename]_transform.csv", "filepath to output transformation matrix CSV");
+DEFINE_string(transformation_matrix_filepath, "[source_filename]_transform.txt", "filepath to output transformation matrix CSV");
 DEFINE_string(registered_pointcloud_filepath, "[source_filename]_registered.ply", "filepath to output registered point cloud PLY");
 DEFINE_string(residual_histogram_image_filepath, "[source_filename]_histogram.png", "filepath to output histogram PNG");
 DEFINE_string(fscore_filepath, "[source_filename]_fscore.txt", "filepath to output f-score TXT");
@@ -180,10 +180,10 @@ int main () {
         std::string residual_histogram_image_filepath;
         std::string fscore_filepath;
         
-        if (FLAGS_transformation_matrix_filepath != "[source_filename]_transform.csv")
+        if (FLAGS_transformation_matrix_filepath != "[source_filename]_transform.txt")
             transformation_matrix_filepath = FLAGS_transformation_matrix_filepath;
         else
-            transformation_matrix_filepath = prefix + "_transform.csv";
+            transformation_matrix_filepath = prefix + "_transform.txt";
     
         if (FLAGS_registered_pointcloud_filepath != "[source_filename]_registered.ply")
             registered_pointcloud_filepath = FLAGS_registered_pointcloud_filepath;

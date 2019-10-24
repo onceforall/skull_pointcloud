@@ -270,13 +270,22 @@ namespace util
      */
     int writeMatrixToFile(const Eigen::MatrixXf &matrix, const std::string filepath) {
         
-        Eigen::IOFormat format(Eigen::FullPrecision, 0, ",", "\n", "", "", "", "");
+        //Eigen::IOFormat format(Eigen::FullPrecision, 0, ",", "\n", "", "", "", "");
         std::ofstream outfile(filepath);
-        
+        int rows=matrix.rows();
+        int clos=matrix.cols();
         if (outfile.is_open()) {
-            outfile << matrix.format(format);
+            for(int i=0;i<rows;i++)
+            {
+                for(int j=0;j<clos;j++)
+                    outfile<<matrix(i,j)<<' ';
+                outfile<<std::endl;
+            }
+            outfile.close(); 
+            //outfile << matrix.format(format);
             return 0;
         }
+        outfile.close();
         return -1;
     }
     
