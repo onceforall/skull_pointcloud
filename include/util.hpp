@@ -63,6 +63,7 @@ namespace util
     std::string extractFileExtension(const std::string &filepath);
     std::string removeFileExtension(const std::string &filepath);
     void writeStringToFile(const std::string& filepath, const std::string s);
+    int find_nexttolast(const std::string filepath);
 }
 
 

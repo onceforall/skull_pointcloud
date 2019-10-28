@@ -56,8 +56,8 @@ public:
 	~Pointspick(){}
 	void loadInputcloud(string inputcloudfile);
 	void stl_ply(string stl_path,string ply_path);
-	void simpleViewer(string inputcloudfile);
-	
+	void simpleViewer(const string inputcloudfile);
+	int find_nexttolast(const string filepath);
 protected:
 	void pp_callback(const pcl::visualization::PointPickingEvent& event, void*);
 private:

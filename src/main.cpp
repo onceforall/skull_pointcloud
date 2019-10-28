@@ -32,7 +32,7 @@ DECLARE_bool(help);
 DEFINE_bool(h, false, "Show help");
 DEFINE_bool(gui, true, "launch GUI after registration");
 DEFINE_string(batch_file, "", "path to batch processing file");
-DEFINE_string(transformation_matrix_filepath, "[source_filename]_transform.txt", "filepath to output transformation matrix CSV");
+DEFINE_string(transformation_matrix_filepath, "[source_filename]_transform.txt", "filepath to output transformation matrix txt");
 DEFINE_string(registered_pointcloud_filepath, "[source_filename]_registered.ply", "filepath to output registered point cloud PLY");
 DEFINE_string(residual_histogram_image_filepath, "[source_filename]_histogram.png", "filepath to output histogram PNG");
 DEFINE_string(fscore_filepath, "[source_filename]_fscore.txt", "filepath to output f-score TXT");
@@ -45,7 +45,7 @@ using namespace PRT;
 
 //int main (int argc, char* argv[]) {
 int main () { 
-    string pic="/home/yons/PointCloudRegistrationTool/data/coords_rcg/识别图+模型3.bmp";
+    string pic="/home/yons/PointCloudRegistrationTool/data/识别图+模型3.bmp";
     //vector<Vec3f> coords=getcoords(pic);
  
     std::string usage_message = "\nUsage:\n\n1. ./point_cloud_registration_tool [options] <source_point_cloud> <target_point_cloud>\n2. ./point_cloud_registration_tool [options] --batch_file <batch_filepath>\n\nA batch file is a two-column CSV. First column: source point cloud filepaths, second column: target point cloud filepaths.\n\nSee --help for optional arguments\n";
@@ -109,22 +109,20 @@ int main () {
         //pair.sourcefile = argv[1];
         //pair.targetfile = argv[2];
         pair.sourcefile = pic.substr(0,pic.find_last_of('.'))+".ply";
-        pair.targetfile = "/home/yons/File/kinect_icp/data/simplify_Segment_picked.ply";
+        pair.targetfile = "/home/yons/PointCloudRegistrationTool/data/coords_rcg/simplify_Segment.stl";
         filepairs = FilepairVectorPtr(new FilepairVector());
         filepairs->push_back(pair);
         
     }
 
-    string inputfilename = pic.substr(0,pic.find_last_of('.'))+".ply";
-	string targetfilename = "/home/yons/File/kinect_icp/data/simplify_Segment.stl"; 
+    string targetfilename = pic.substr(0,pic.find_last_of('.'))+".ply";
+	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.stl"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;
     Pointspick inputpointspick;
-    inputpointspick.loadInputcloud(inputfilename);
-    inputpointspick.simpleViewer(inputfilename);
-    //writetofile(inputfilename.substr(0,inputfilename.find_last_of('.')).append("_pickedpoints.ply"));
-
+    inputpointspick.loadInputcloud(targetfilename);
+    inputpointspick.simpleViewer(targetfilename);
     
     inputareapick.loadInputcloud(inputfilename);
     inputareapick.simpleViewer(inputfilename);
@@ -173,23 +171,28 @@ int main () {
         
         //Extract prefix for output files
         std::string prefix = util::removeFileExtension(filepairs->at(i).sourcefile);
-        
+        int index=util::find_nexttolast(filepairs->at(i).sourcefile);
+        if(index==-1) return -1;
         //Set output file paths
-        std::string transformation_matrix_filepath;
+        std::string transformation_matrix_filepath=filepairs->at(i).sourcefile.substr(0,index).append("/res/transform.txt");
         std::string registered_pointcloud_filepath;
         std::string residual_histogram_image_filepath;
         std::string fscore_filepath;
-        
+       
+        #if 0
         if (FLAGS_transformation_matrix_filepath != "[source_filename]_transform.txt")
             transformation_matrix_filepath = FLAGS_transformation_matrix_filepath;
         else
             transformation_matrix_filepath = prefix + "_transform.txt";
-    
+        #endif
+
+
         if (FLAGS_registered_pointcloud_filepath != "[source_filename]_registered.ply")
             registered_pointcloud_filepath = FLAGS_registered_pointcloud_filepath;
         else
             registered_pointcloud_filepath = prefix + "_registered.ply";
         
+        #if 0
         if (FLAGS_residual_histogram_image_filepath != "[source_filename]_histogram.png")
             residual_histogram_image_filepath = FLAGS_residual_histogram_image_filepath;
         else
@@ -199,7 +202,8 @@ int main () {
             fscore_filepath = FLAGS_fscore_filepath;
         else
             fscore_filepath = prefix + "_fscore.txt";
-    
+        
+        
         //Ensure unique output filepaths
         if (util::ensureUniqueFilepath(transformation_matrix_filepath) != 0) {
             std::cout << "Failed to create transformation matrix file." << std::endl;
@@ -220,7 +224,9 @@ int main () {
             std::cout << "Failed to create residual histogram file." << std::endl;
             continue;
         }
-        
+        #endif
+
+
         //Registration
         //Setup
         Registrator::Ptr registrator (new Registrator());
@@ -240,13 +246,14 @@ int main () {
         
         //Save Results
         
-        registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);
-        registrator->saveFinalTransform(transformation_matrix_filepath);
-        registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);
+        //registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
+        if(registrator->saveFinalTransform(transformation_matrix_filepath)!=0)
+            cout<<"Transform matrix saved error"<<endl;
+        //registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);  //save Fscore
         
         std::cout << "Registration of " << source_cloud_filepath << " finished" << std::endl;
-        std::cout << "F-score: " << registrator->getFScoreAtThreshold() << std::endl;
-        std::cout << "Saved to: " << registered_pointcloud_filepath << std::endl;
+        //std::cout << "F-score: " << registrator->getFScoreAtThreshold() << std::endl;
+        //std::cout << "Saved to: " << registered_pointcloud_filepath << std::endl;
         
         if (!FLAGS_gui)
             continue;
@@ -254,7 +261,7 @@ int main () {
         //Visualization
         Visualizer visualizer ("Point Cloud Registration Tool");
         visualizer.setRegistrator(registrator);
-        visualizer.saveHistogramImage(residual_histogram_image_filepath);
+        //visualizer.saveHistogramImage(residual_histogram_image_filepath);
         visualizer.visualize();
         
     }

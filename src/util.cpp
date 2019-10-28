@@ -18,6 +18,24 @@ namespace util
     static std::mt19937 rng(rd());
     std::uniform_int_distribution<> dist (0, 100);
     
+
+    int find_nexttolast(const std::string filepath)
+    {
+        int index=-1;
+        int cnt=0;
+        int i=filepath.size();
+        while(i--)
+        {
+            if(filepath[i]=='/')
+                cnt++;
+            if(cnt==2)
+            {
+                index=i;
+                break;
+            }
+        }
+	    return index;
+    }
     /**
      Print 4x4 in human readable form
      */
