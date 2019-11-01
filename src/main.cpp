@@ -115,7 +115,7 @@ int main () {
         
     }
 
-    string targetfilename = pic.substr(0,pic.find_last_of('.'))+".ply";
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/test.ply";
 	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.stl"; 
 
     AreaPick targetareapick;
