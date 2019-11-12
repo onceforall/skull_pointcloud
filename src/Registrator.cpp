@@ -34,8 +34,12 @@ Registrator::Registrator() {
     
     s_cloud_ = PointCloudT::Ptr();
     t_cloud_ = PointCloudT::Ptr();
-    
+    ori_s_cloud_ = PointCloudT::Ptr();
+    ori_t_cloud_ = PointCloudT::Ptr();
     r_cloud_ = PointCloudT::Ptr(new PointCloudT);
+    ori_r_cloud_ = PointCloudT::Ptr(new PointCloudT);
+
+  
     r_cloud_rgb_ = PointCloudRGBT::Ptr(new PointCloudRGBT);
     s_cloud_normals_ = NormalCloudT::Ptr(new NormalCloudT);
     t_cloud_normals_ = NormalCloudT::Ptr(new NormalCloudT);
@@ -68,6 +72,16 @@ Registrator::Registrator() {
     colormap_residuals_ = DoubleVectorPtr(new DoubleVector());
     
     r_color_ = RGB(0, 255, 0); // Green
+}
+
+void Registrator::setOriginSourceCloud(const PointCloudT::Ptr &cloud)
+{
+    ori_s_cloud_=cloud;
+}
+
+void Registrator::setOriginTargetCloud(const PointCloudT::Ptr &cloud)
+{
+    ori_t_cloud_=cloud;
 }
 
 void Registrator::setSourceCloud(const PointCloudT::Ptr &cloud) {
@@ -131,6 +145,14 @@ PointCloudT::Ptr Registrator::getRegisteredCloud() {
 
 PointCloudRGBT::Ptr Registrator::getRegisteredRGBCloud() {
     return r_cloud_rgb_;
+}
+
+PointCloudT::Ptr Registrator::getOriginSourceCloud() {
+    return ori_s_cloud_;
+}
+
+PointCloudT::Ptr Registrator::getOriginTargetCloud() {
+    return ori_t_cloud_;
 }
 
 PointCloudT::Ptr Registrator::getSourceCloud() {
@@ -405,18 +427,21 @@ void Registrator::performRegistration(const std::string registration_technique) 
         ICPBasedRegistration();
     
     if (is_correspondence_matching_complete_ && !is_icp_complete_)
-        pcl::transformPointCloud(*s_cloud_, *r_cloud_, correspondence_T_);
+    { 
+        pcl::transformPointCloud(*ori_s_cloud_, *ori_r_cloud_, correspondence_T_);
+    }
+        
     else if(!is_correspondence_matching_complete_ && is_icp_complete_)
-        pcl::transformPointCloud(*s_cloud_, *r_cloud_, icp_T_);
+        pcl::transformPointCloud(*ori_s_cloud_, *ori_r_cloud_, icp_T_);
     else if(is_correspondence_matching_complete_ && is_icp_complete_) {
         combined_T_ = icp_T_;
-        pcl::transformPointCloud(*s_cloud_, *r_cloud_, combined_T_);
+        pcl::transformPointCloud(*ori_s_cloud_, *ori_r_cloud_, combined_T_);  
     }
-    
+   
     //Save copy of registered point cloud to colorize
-    pcl::copyPointCloud(*r_cloud_, *r_cloud_rgb_);
+    pcl::copyPointCloud(*ori_r_cloud_, *r_cloud_rgb_);
+    std::cout<<"r_cloud_rgb_ size: "<<r_cloud_rgb_->size()<<std::endl;
     setRegisteredCloudToDefaultColor();
-    
     colormap_residuals_->resize(getRegisteredToTargetResiduals()->size());
     
 }
@@ -566,8 +591,8 @@ void Registrator::computeResidualColormap() {
  */
 int Registrator::saveResidualColormapPointCloud(std::string &filepath) {
     
-    if (!is_residual_colormap_computed_)
-        computeResidualColormap();
+    //if (!is_residual_colormap_computed_)
+        //computeResidualColormap();                    //edited here; dont compute the residusl
     
     return util::writePointCloudToPLY(filepath, *r_cloud_rgb_);
     

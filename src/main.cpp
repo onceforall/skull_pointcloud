@@ -115,8 +115,8 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/test.ply";
-	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.stl"; 
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/3.ply";
+	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;
@@ -153,7 +153,13 @@ int main () {
         source_cloud->clear();
         std::string source_cloud_filepath = filepairs->at(i).sourcefile;
         bool reads_successful = true;
-            
+        
+        PointCloudT::Ptr ori_source_cloud (new PointCloudT);
+        ori_source_cloud->clear();
+         PointCloudT::Ptr ori_target_cloud (new PointCloudT);
+        ori_target_cloud->clear();
+
+
        	if (util::loadPointCloud(source_cloud_filepath, *source_cloud) != 0) {
             std::cout << "Invalid input:" << std::endl << source_cloud_filepath << std::endl;
             std::cout << "Skipping.." << std::endl;
@@ -162,6 +168,18 @@ int main () {
 
         if (util::loadPointCloud(target_cloud_filepath, *target_cloud) != 0) {
             std::cout << "Invalid input:" << std::endl << target_cloud_filepath << std::endl;
+            std::cout << "Skipping.." << std::endl;
+            reads_successful = false;
+        }
+
+        if (util::loadPointCloud(inputfilename, *ori_source_cloud) != 0) {
+            std::cout << "Invalid input:" << std::endl << inputfilename << std::endl;
+            std::cout << "Skipping.." << std::endl;
+            reads_successful = false;
+        }
+
+        if (util::loadPointCloud(targetfilename, *ori_target_cloud) != 0) {
+            std::cout << "Invalid input:" << std::endl << targetfilename << std::endl;
             std::cout << "Skipping.." << std::endl;
             reads_successful = false;
         }
@@ -240,13 +258,15 @@ int main () {
         registrator->setResidualThreshold(FLAGS_residual_threshold);
         registrator->setTargetCloud(target_cloud);
         registrator->setSourceCloud(source_cloud);
+        registrator->setOriginSourceCloud(ori_source_cloud);
+        registrator->setOriginTargetCloud(ori_target_cloud);
         
         //Compute
         registrator->performRegistration(FLAGS_registration_technique);
         
         //Save Results
         
-        //registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
+        registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
         if(registrator->saveFinalTransform(transformation_matrix_filepath)!=0)
             cout<<"Transform matrix saved error"<<endl;
         //registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);  //save Fscore
@@ -263,6 +283,9 @@ int main () {
         visualizer.setRegistrator(registrator);
         //visualizer.saveHistogramImage(residual_histogram_image_filepath);
         visualizer.visualize();
+
+        inputpointspick.loadInputcloud(registered_pointcloud_filepath);
+        inputpointspick.simpleViewer(registered_pointcloud_filepath);
         
     }
 

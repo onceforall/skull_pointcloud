@@ -225,6 +225,7 @@ void  AreaPick::simpleViewer(string inputcloudfile)
 	viewer->registerAreaPickingCallback(&AreaPick::pp_callback, *this);
 	viewer->registerKeyboardCallback(&AreaPick::closeviewer,*this);
 	//viewer->setFullScreen(true); // Visualiser window size
+	//viewer->addCoordinateSystem();
 	viewer->setSize(screen_width,screen_height);
 	while (!viewer->wasStopped())
 	{
@@ -441,6 +442,7 @@ void Pointspick::simpleViewer(const string inputcloudfile)
 	viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer(cloudName));
 	viewer->addPointCloud(inputcloud, cloudName);
 	viewer->resetCameraViewpoint(cloudName);
+	viewer->addCoordinateSystem();
 	viewer->registerPointPickingCallback(&Pointspick::pp_callback, *this);
 	//viewer->setFullScreen(true); // Visualiser window size
 	viewer->setSize(screen_width,screen_height);
@@ -459,7 +461,10 @@ void Pointspick::simpleViewer(const string inputcloudfile)
 		return;
 	}
 	
-    outFile.open(inputcloudfile.substr(0,nexttolast).append("/res/coords.txt"));
+	if(inputcloudfile.find("registered")!=string::npos)
+		outFile.open(inputcloudfile.substr(0,nexttolast).append("/res/line.txt"));
+    else
+		outFile.open(inputcloudfile.substr(0,nexttolast).append("/res/coords.txt"));
    
     for(auto p:clicked_points_3d->points)
 	{

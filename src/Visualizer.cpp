@@ -42,7 +42,7 @@ Visualizer::Visualizer(const std::string &name) {
     viewer_->setSize (screen_width, screen_height);
     viewer_->registerKeyboardCallback (&keyboardEventOccurred, this);
     viewer_->setShowFPS(false);
-    
+    //viewer_->addCoordinateSystem();
     plotter_ = PCLPlotterPtr(new pcl::visualization::PCLPlotter);
     plotter_->setTitle("Residuals Histogram");
     plotter_->setXTitle("Distance (m)");
@@ -52,7 +52,7 @@ Visualizer::Visualizer(const std::string &name) {
     registrator_ = Registrator::Ptr();
     
     s_color_ = RGB(0, 0, 255); //Blue
-    t_color_ = RGB(0, 255, 0); // Green
+    t_color_ = RGB(255, 0, 0); // Green
     r_color_ = RGB(255, 0, 0); // Red
     keypoints_color_ = RGB(255, 255, 0); // Yellow
     
@@ -231,8 +231,8 @@ void Visualizer::visualize() {
         
         //Source
         if (show_source_ && !registrator_->getSourceCloud()->empty() && !s_cloud_visible_) {
-            pcl::visualization::PointCloudColorHandlerCustom<PointT> s_cloud_color_h (registrator_->getSourceCloud(), s_color_.r, s_color_.g, s_color_.b);
-            viewer_->addPointCloud<PointT> (registrator_->getSourceCloud(), s_cloud_color_h, "s_cloud");
+            pcl::visualization::PointCloudColorHandlerCustom<PointT> s_cloud_color_h (registrator_->getOriginSourceCloud(), s_color_.r, s_color_.g, s_color_.b);
+            viewer_->addPointCloud<PointT> (registrator_->getOriginSourceCloud(), s_cloud_color_h, "s_cloud");
             s_cloud_visible_ = true;
             viewer_->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, point_size_, "s_cloud");
         } else if (!show_source_ && s_cloud_visible_) {
@@ -242,8 +242,8 @@ void Visualizer::visualize() {
         
         //Target
         if (show_target_ && !registrator_->getTargetCloud()->empty() && !t_cloud_visible_) {
-            pcl::visualization::PointCloudColorHandlerCustom<PointT> t_cloud_color_h (registrator_->getTargetCloud(), t_color_.r, t_color_.g, t_color_.b);
-            viewer_->addPointCloud<PointT> (registrator_->getTargetCloud(), t_cloud_color_h, "t_cloud");
+            pcl::visualization::PointCloudColorHandlerCustom<PointT> t_cloud_color_h (registrator_->getOriginTargetCloud(), t_color_.r, t_color_.g, t_color_.b);
+            viewer_->addPointCloud<PointT> (registrator_->getOriginTargetCloud(), t_cloud_color_h, "t_cloud");
             t_cloud_visible_ = true;
             viewer_->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, point_size_, "t_cloud");
         } else if (!show_target_ && t_cloud_visible_) {

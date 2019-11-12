@@ -78,6 +78,10 @@ public:
      The target cloud is that which we aim to align against
      */
     void setTargetCloud(const PointCloudT::Ptr &cloud);
+
+    void setOriginSourceCloud(const PointCloudT::Ptr &cloud);
+    void setOriginTargetCloud(const PointCloudT::Ptr &cloud);
+
     
     //Setup methods
     void setSubsamplingRadius(double r);
@@ -103,6 +107,10 @@ public:
     PointCloudRGBT::Ptr getRegisteredRGBCloud();
     PointCloudT::Ptr getSourceCloud();
     PointCloudT::Ptr getTargetCloud();
+    PointCloudT::Ptr getOriginSourceCloud();
+
+    PointCloudT::Ptr getOriginTargetCloud();
+
     PointCloudT::Ptr getSourceKeypointsCloud();
     PointCloudT::Ptr getTargetKeypointsCloud();
     DoubleVectorPtr getTargetToRegisteredResiduals();
@@ -132,6 +140,11 @@ private:
     PointCloudT::Ptr s_cloud_; //Source Cloud
     PointCloudT::Ptr t_cloud_; //Target Cloud
     PointCloudT::Ptr r_cloud_; //Source Cloud after Registration
+
+    PointCloudT::Ptr ori_s_cloud_; //origin Source Cloud
+    PointCloudT::Ptr ori_t_cloud_; //origin Target Cloud
+    PointCloudT::Ptr ori_r_cloud_; //ori Source Cloud after Registration
+    
     PointCloudRGBT::Ptr r_cloud_rgb_; //Source Cloud after Registration (with RGB attributes)
     
     NormalCloudT::Ptr s_cloud_normals_; //Source Cloud Normals
