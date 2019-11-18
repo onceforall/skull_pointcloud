@@ -442,7 +442,7 @@ void Pointspick::simpleViewer(const string inputcloudfile)
 	viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer(cloudName));
 	viewer->addPointCloud(inputcloud, cloudName);
 	viewer->resetCameraViewpoint(cloudName);
-	viewer->addCoordinateSystem();
+	//viewer->addCoordinateSystem();
 	viewer->registerPointPickingCallback(&Pointspick::pp_callback, *this);
 	//viewer->setFullScreen(true); // Visualiser window size
 	viewer->setSize(screen_width,screen_height);

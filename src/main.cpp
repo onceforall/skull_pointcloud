@@ -115,8 +115,8 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/3.ply";
-	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply"; 
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/sfm_data_dense_filtered.ply";
+	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/xietou_wzy1.ply"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;

@@ -23,6 +23,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/console/time.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/random_sample.h>
 #include <pcl/features/shot_omp.h>
 #include <pcl/features/normal_3d_omp.h>
 #include <pcl/registration/transformation_estimation_svd.h>

@@ -59,7 +59,7 @@ Registrator::Registrator() {
     icp_T_ = Eigen::Matrix4f::Identity();
     combined_T_ = Eigen::Matrix4f::Identity();
     
-    uniform_sampling_radius_ = 0.25;
+    uniform_sampling_radius_ = 0.25; //change from 0.25 to 0.5
     descriptor_radius_ = 1;
     num_k_search_neighbors_ = 100;
     consensus_inlier_threshold_ = 0.5;
@@ -260,9 +260,19 @@ void Registrator::extractKeypoints() {
         std::cout << "Subsampled source cloud from " << s_cloud_->size() << " -> " << s_cloud_keypoints_->size() << std::endl;
     }
 
-    subsampling.setInputCloud(t_cloud_);
-    subsampling.filter(*t_cloud_keypoints_);
-    
+    //random sampling 
+    pcl::RandomSample<PointT> rs;
+    rs.setInputCloud(t_cloud_);
+    //设置输出点的数量   
+    rs.setSample(s_cloud_keypoints_->size()<t_cloud_->size()?s_cloud_keypoints_->size():(int)t_cloud_->size()/4);
+ 
+    //下采样并输出到cloud_out
+    rs.filter(*t_cloud_keypoints_);
+
+    //origin subsampling
+    //subsampling.setInputCloud(t_cloud_);
+    //subsampling.filter(*t_cloud_keypoints_);
+    //t_cloud_keypoints_=t_cloud_;
     if(verbose) {
         std::cout << "Subsampled target cloud from " << t_cloud_->size() << " -> " << t_cloud_keypoints_->size() << std::endl;
     }
