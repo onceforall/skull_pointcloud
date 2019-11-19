@@ -92,7 +92,7 @@ public:
     void setConsensusMaxIterations(int i);
     void setICPMaxCorrespondenceDistance(double d);
     void setICPMaxIterations(int i);
-    
+    void computeResiduals();           //change from private to public
     //Computation methods
     void performRegistration(const std::string);
     void computeResidualColormap();
@@ -130,7 +130,7 @@ private:
     void computeNormals();
     void extractKeypoints();
     void computeDescriptors();
-    void computeResiduals();
+    
     void findCorrespondences();
     void filterCorrespondences();
     void computeCorrespondenceBasedTransformation();

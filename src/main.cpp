@@ -115,8 +115,8 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/sfm_data_dense_filtered.ply";
-	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/xietou_wzy1.ply"; 
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/191119.ply";
+	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;
@@ -210,7 +210,7 @@ int main () {
         else
             registered_pointcloud_filepath = prefix + "_registered.ply";
         
-        #if 0
+      
         if (FLAGS_residual_histogram_image_filepath != "[source_filename]_histogram.png")
             residual_histogram_image_filepath = FLAGS_residual_histogram_image_filepath;
         else
@@ -242,7 +242,7 @@ int main () {
             std::cout << "Failed to create residual histogram file." << std::endl;
             continue;
         }
-        #endif
+       
 
 
         //Registration
@@ -266,10 +266,11 @@ int main () {
         
         //Save Results
         
+
         registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
         if(registrator->saveFinalTransform(transformation_matrix_filepath)!=0)
             cout<<"Transform matrix saved error"<<endl;
-        //registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);  //save Fscore
+        registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);  //save Fscore
         
         std::cout << "Registration of " << source_cloud_filepath << " finished" << std::endl;
         //std::cout << "F-score: " << registrator->getFScoreAtThreshold() << std::endl;

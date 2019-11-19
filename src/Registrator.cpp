@@ -64,7 +64,7 @@ Registrator::Registrator() {
     num_k_search_neighbors_ = 100;
     consensus_inlier_threshold_ = 0.5;
     consensus_max_iterations_ = 100;
-    icp_max_iterations_ = 100;
+    icp_max_iterations_ = 200;                   //change from 100 to 200
     icp_max_correspondence_distance_ = 0.05;
     
     residual_threshold_ = 0.25;
@@ -261,18 +261,18 @@ void Registrator::extractKeypoints() {
     }
 
     //random sampling 
-    pcl::RandomSample<PointT> rs;
-    rs.setInputCloud(t_cloud_);
+    //pcl::RandomSample<PointT> rs;
+    //rs.setInputCloud(t_cloud_);
     //设置输出点的数量   
-    rs.setSample(s_cloud_keypoints_->size()<t_cloud_->size()?s_cloud_keypoints_->size():(int)t_cloud_->size()/4);
+    //rs.setSample(s_cloud_keypoints_->size()<t_cloud_->size()?s_cloud_keypoints_->size():(int)t_cloud_->size()/4);
  
     //下采样并输出到cloud_out
-    rs.filter(*t_cloud_keypoints_);
+    //rs.filter(*t_cloud_keypoints_);
 
     //origin subsampling
-    //subsampling.setInputCloud(t_cloud_);
-    //subsampling.filter(*t_cloud_keypoints_);
-    //t_cloud_keypoints_=t_cloud_;
+    subsampling.setInputCloud(t_cloud_);
+    subsampling.filter(*t_cloud_keypoints_);
+   
     if(verbose) {
         std::cout << "Subsampled target cloud from " << t_cloud_->size() << " -> " << t_cloud_keypoints_->size() << std::endl;
     }
@@ -407,7 +407,8 @@ void Registrator::ICPBasedRegistration() {
     
     if (is_correspondence_matching_complete_) {
         icp.align(*r_cloud_, correspondence_T_);
-    
+        double curr_score = icp.getFitnessScore();
+        std::cout<<"Final Fitness Score: "<<curr_score<<std::endl;
         if(verbose)
             std::cout << "Estimated combined correspondence/ICP-based transformation:" << std::endl;
     }
@@ -450,7 +451,7 @@ void Registrator::performRegistration(const std::string registration_technique) 
    
     //Save copy of registered point cloud to colorize
     pcl::copyPointCloud(*ori_r_cloud_, *r_cloud_rgb_);
-    std::cout<<"r_cloud_rgb_ size: "<<r_cloud_rgb_->size()<<std::endl;
+    
     setRegisteredCloudToDefaultColor();
     colormap_residuals_->resize(getRegisteredToTargetResiduals()->size());
     
@@ -462,8 +463,9 @@ void Registrator::performRegistration(const std::string registration_technique) 
 void Registrator::computeResiduals() {
     
     t_r_residuals_->resize(t_cloud_->size());
-    r_t_residuals_->resize(r_cloud_->size());
-
+    r_t_residuals_->resize(ori_r_cloud_->size());
+    double t_r_res=0;   //add t_r_res here
+    double r_t_res=0;   //add r_t_res here
     #pragma omp parallel sections
     {
         #pragma omp section
@@ -471,7 +473,7 @@ void Registrator::computeResiduals() {
             std::vector<int> neighbor_indice_1 (1);
             std::vector<float> neighbor_squared_distance_1 (1);
             pcl::KdTreeFLANN<PointT> nn_search_1;
-            nn_search_1.setInputCloud (r_cloud_);
+            nn_search_1.setInputCloud (ori_r_cloud_);
             t_r_max_residual_ = 0;
             int i_1 = 0;
             double d_1 = 0;
@@ -482,7 +484,7 @@ void Registrator::computeResiduals() {
                 d_1 = std::sqrt(neighbor_squared_distance_1[0]);
                 
                 t_r_residuals_->at(i_1++) = d_1;
-                
+                t_r_res+=d_1;
                 if (d_1 > t_r_max_residual_)
                     t_r_max_residual_ = d_1;
                 
@@ -499,13 +501,13 @@ void Registrator::computeResiduals() {
             int i_2 = 0;
             double d_2 = 0;
             
-            for(PointCloudT::iterator it = r_cloud_->begin(); it != r_cloud_->end(); it++){
+            for(PointCloudT::iterator it = ori_r_cloud_->begin(); it != ori_r_cloud_->end(); it++){
                 
                 nn_search_2.nearestKSearch((PointT)*it, 1, neighbor_indice_2, neighbor_squared_distance_2);
                 d_2 = std::sqrt(neighbor_squared_distance_2[0]);
                 
                 r_t_residuals_->at(i_2++) = d_2;
-                
+                r_t_res+=d_2;
                 if (d_2 > r_t_max_residual_)
                     r_t_max_residual_ = d_2;
                 
@@ -514,7 +516,7 @@ void Registrator::computeResiduals() {
     }
     
     if(verbose)
-        std::cout << "Computed source -> target cloud residuals" << std::endl;
+        std::cout << "Computed source -> target cloud residuals: "<<"("<<t_cloud_->size()<<") "<<t_r_res/t_cloud_->size() << std::endl;
 }
 
 
@@ -601,8 +603,8 @@ void Registrator::computeResidualColormap() {
  */
 int Registrator::saveResidualColormapPointCloud(std::string &filepath) {
     
-    //if (!is_residual_colormap_computed_)
-        //computeResidualColormap();                    //edited here; dont compute the residusl
+    if (!is_residual_colormap_computed_)
+        computeResidualColormap();                    //edited here; dont compute the residual
     
     return util::writePointCloudToPLY(filepath, *r_cloud_rgb_);
     
