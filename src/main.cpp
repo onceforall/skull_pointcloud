@@ -117,13 +117,17 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/skull_pointcloud/data/191118.ply";
-	string inputfilename = "/home/yons/skull_pointcloud/data/simplify_Segment.ply"; 
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/wzx_skull.ply";
+	string inputfilename = "/home/yons/PointCloudRegistrationTool/res/mirror.ply"; 
 
+    Mirror mir;
+
+
+   
     AreaPick targetareapick;
     AreaPick inputareapick;
     Pointspick inputpointspick;
-    Mirror mir;
+    
 
 
     inputpointspick.loadInputcloud(targetfilename);
@@ -139,9 +143,9 @@ int main () {
     pair.targetfile = targetfilename.substr(0,targetfilename.find_last_of('.')).append("_picked.ply");
     filepairs = FilepairVectorPtr(new FilepairVector());
     filepairs->push_back(pair);
+ 
 
-
-    mir.get_mirrorpointcloud(pair.sourcefile);
+    mir.get_mirrorpointcloud("/home/yons/PointCloudRegistrationTool/data/wzx_skull_picked.ply");
 
 
 
@@ -154,6 +158,8 @@ int main () {
             std::cout << "Executing in parallel" << std::endl;
     #endif
 
+
+    #if 0
     for(FilepairVector::size_type i = 0; i < filepairs->size(); i++) {
         
         PointCloudT::Ptr target_cloud (new PointCloudT);
@@ -231,9 +237,10 @@ int main () {
             fscore_filepath = FLAGS_fscore_filepath;
         else
             fscore_filepath = prefix + "_fscore.txt";
-        
+        #endif
         
         //Ensure unique output filepaths
+        #if 0
         if (util::ensureUniqueFilepath(transformation_matrix_filepath) != 0) {
             std::cout << "Failed to create transformation matrix file." << std::endl;
             continue;
@@ -253,9 +260,11 @@ int main () {
             std::cout << "Failed to create residual histogram file." << std::endl;
             continue;
         }
-       
+       #endif
 
 
+
+        #if 0
         //Registration
         //Setup
         Registrator::Ptr registrator (new Registrator());
@@ -298,8 +307,10 @@ int main () {
 
         inputpointspick.loadInputcloud(registered_pointcloud_filepath);
         inputpointspick.simpleViewer(registered_pointcloud_filepath);
-        
+   
     }
+    #endif
+    
 
     return 0;
 }

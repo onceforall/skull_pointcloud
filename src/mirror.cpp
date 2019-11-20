@@ -4,8 +4,8 @@
 
 Mirror::Mirror()
 {
-    mirror_cloud=PointCloudT::Ptr();
-    ori_cloud=PointCloudT::Ptr();
+    mirror_cloud=PointCloudT::Ptr(new PointCloudT);
+    ori_cloud=PointCloudT::Ptr(new PointCloudT);
 }
 
 
@@ -50,15 +50,24 @@ void Mirror::get_mirrorpointcloud(string inputcloudfilename)
 {
     loadInputcloud(inputcloudfilename);
     struct Coord pp[3];
-    ifstream fin("/home/yons/skull_pointcloud/res/coords.txt");
+    ifstream fin("/home/yons/PointCloudRegistrationTool/res/coords.txt");
     if(!fin) exit(0);
-    int i=0;
-    while(fin)
+ 
+    for(int i=0;i<1;i++)
     {
         fin>>pp[i].x>>pp[i].y>>pp[i].z;
-        i++;
+		cout<<pp[i].x<<pp[i].y<<pp[i].z<<endl;
+        
     }
-    mirror_cloud->resize((2*ori_cloud->width,2*ori_cloud->height));
+	pp[1].x=pp[0].x+1;
+	pp[1].y=pp[0].y+1;
+	pp[1].z=pp[0].z;
+
+	pp[2].x=pp[0].x+3;
+	pp[2].y=pp[0].y+6;
+	pp[2].z=pp[0].z;
+
+    //mirror_cloud->resize((2*ori_cloud->width,2*ori_cloud->height));
     Coefficient pc=get_panal(pp);
     Coord mirror_pt;
     for(auto point:ori_cloud->points)
@@ -66,10 +75,10 @@ void Mirror::get_mirrorpointcloud(string inputcloudfilename)
         struct Coord pt={point.x,point.y,point.z};
        
         mirror_pt=get_mirrorpt(pt,pc);
-        mirror_cloud->points.push_back(pcl::PointXYZ(point.x,point.y,point.z));
+        //mirror_cloud->points.push_back(pcl::PointXYZ(point.x,point.y,point.z));
         mirror_cloud->points.push_back(pcl::PointXYZ(mirror_pt.x, mirror_pt.y, mirror_pt.z));    
     }
-    pcl::io::savePLYFileASCII("/home/yons/skull_pointcloud/data/mirror.ply", *mirror_cloud);
+    pcl::io::savePLYFileASCII("/home/yons/PointCloudRegistrationTool/res/mirror.ply", *mirror_cloud);
 
 }
 
@@ -91,6 +100,11 @@ void Mirror::loadInputcloud(string inputcloudfile)
 			cout << "Can't load pointcloud from " + inputcloudfile << endl;
 			return;
 		}
+		else
+		{
+			cout<<"load pointcloud from "+inputcloudfile<<" width "+to_string(ori_cloud->points.size())<<" points."<<endl;
+		}
+		
 	}
 	else if(filetype==".stl")
 	{
