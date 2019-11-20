@@ -24,6 +24,8 @@
 #include "Visualizer.hpp"
 #include "areapick.h"
 #include "coords_rcg.h"
+#include "mirror.hpp"
+
 
 // GFLAGS
 #include <gflags/gflags.h>
@@ -115,12 +117,15 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/191119.ply";
-	string inputfilename = "/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply"; 
+    string targetfilename = "/home/yons/skull_pointcloud/data/191118.ply";
+	string inputfilename = "/home/yons/skull_pointcloud/data/simplify_Segment.ply"; 
 
     AreaPick targetareapick;
     AreaPick inputareapick;
     Pointspick inputpointspick;
+    Mirror mir;
+
+
     inputpointspick.loadInputcloud(targetfilename);
     inputpointspick.simpleViewer(targetfilename);
     
@@ -134,6 +139,12 @@ int main () {
     pair.targetfile = targetfilename.substr(0,targetfilename.find_last_of('.')).append("_picked.ply");
     filepairs = FilepairVectorPtr(new FilepairVector());
     filepairs->push_back(pair);
+
+
+    mir.get_mirrorpointcloud(pair.sourcefile);
+
+
+
     #ifdef _OPENMP
     omp_set_nested(true);
     if (FLAGS_no_parallel)

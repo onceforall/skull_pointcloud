@@ -436,6 +436,8 @@ void Pointspick::stl_ply(string stl_path,string ply_path)
 	cout << "All Time: " << totaltime << "ms\n";
 	return;
 }
+
+
 void Pointspick::simpleViewer(const string inputcloudfile)
 {
 	//visualizer
