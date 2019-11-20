@@ -105,11 +105,10 @@ int main () {
         
         FLAGS_gui = false;
         
-    } else {
-        
+    } 
+    else 
+    {
         filepair_t pair;
-        //pair.sourcefile = argv[1];
-        //pair.targetfile = argv[2];
         pair.sourcefile = pic.substr(0,pic.find_last_of('.'))+".ply";
         pair.targetfile = "/home/yons/PointCloudRegistrationTool/data/coords_rcg/simplify_Segment.stl";
         filepairs = FilepairVectorPtr(new FilepairVector());
@@ -117,19 +116,13 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/wzx_skull.ply";
-	string inputfilename = "/home/yons/PointCloudRegistrationTool/res/mirror.ply"; 
-
-    Mirror mir;
-
-
-   
+    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/191119.ply";
+    string inputfilename="/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply";
+	
     AreaPick targetareapick;
     AreaPick inputareapick;
     Pointspick inputpointspick;
     
-
-
     inputpointspick.loadInputcloud(targetfilename);
     inputpointspick.simpleViewer(targetfilename);
     
@@ -145,10 +138,6 @@ int main () {
     filepairs->push_back(pair);
  
 
-    mir.get_mirrorpointcloud("/home/yons/PointCloudRegistrationTool/data/wzx_skull_picked.ply");
-
-
-
     #ifdef _OPENMP
     omp_set_nested(true);
     if (FLAGS_no_parallel)
@@ -159,9 +148,9 @@ int main () {
     #endif
 
 
-    #if 0
-    for(FilepairVector::size_type i = 0; i < filepairs->size(); i++) {
-        
+    
+    for(FilepairVector::size_type i = 0; i < filepairs->size(); i++) 
+    {
         PointCloudT::Ptr target_cloud (new PointCloudT);
         target_cloud->clear();
         std::string target_cloud_filepath = filepairs->at(i).targetfile;
@@ -175,7 +164,6 @@ int main () {
         ori_source_cloud->clear();
          PointCloudT::Ptr ori_target_cloud (new PointCloudT);
         ori_target_cloud->clear();
-
 
        	if (util::loadPointCloud(source_cloud_filepath, *source_cloud) != 0) {
             std::cout << "Invalid input:" << std::endl << source_cloud_filepath << std::endl;
@@ -214,14 +202,11 @@ int main () {
         std::string residual_histogram_image_filepath;
         std::string fscore_filepath;
        
-        #if 0
+     
         if (FLAGS_transformation_matrix_filepath != "[source_filename]_transform.txt")
             transformation_matrix_filepath = FLAGS_transformation_matrix_filepath;
         else
             transformation_matrix_filepath = prefix + "_transform.txt";
-        #endif
-
-
         if (FLAGS_registered_pointcloud_filepath != "[source_filename]_registered.ply")
             registered_pointcloud_filepath = FLAGS_registered_pointcloud_filepath;
         else
@@ -237,7 +222,7 @@ int main () {
             fscore_filepath = FLAGS_fscore_filepath;
         else
             fscore_filepath = prefix + "_fscore.txt";
-        #endif
+       
         
         //Ensure unique output filepaths
         #if 0
@@ -263,8 +248,6 @@ int main () {
        #endif
 
 
-
-        #if 0
         //Registration
         //Setup
         Registrator::Ptr registrator (new Registrator());
@@ -285,8 +268,6 @@ int main () {
         registrator->performRegistration(FLAGS_registration_technique);
         
         //Save Results
-        
-
         registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
         if(registrator->saveFinalTransform(transformation_matrix_filepath)!=0)
             cout<<"Transform matrix saved error"<<endl;
@@ -309,8 +290,5 @@ int main () {
         inputpointspick.simpleViewer(registered_pointcloud_filepath);
    
     }
-    #endif
-    
-
     return 0;
 }

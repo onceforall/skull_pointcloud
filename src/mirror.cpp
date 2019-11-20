@@ -13,6 +13,7 @@ Coefficient Mirror::get_panal(struct Coord pp[3])
 {
 
     Coefficient C;
+	
     C.a=((pp[1].y-pp[0].y)*(pp[2].z-pp[0].z)-(pp[1].z-pp[0].z)*(pp[2].y-pp[0].y));
     C.b=((pp[1].z-pp[0].z)*(pp[2].x-pp[0].x)-(pp[1].x-pp[0].x)*(pp[2].z-pp[0].z));
     C.c=((pp[1].x-pp[0].x)*(pp[2].y-pp[0].y)-(pp[1].y-pp[0].y)*(pp[2].x-pp[0].x));
@@ -34,14 +35,14 @@ Coord Mirror::get_mirrorpt(Coord pt,Coefficient C)
     //     mirror_pt.y=pt.y-C.b/C.a*(pt.x-mirror_pt.x);
     //     mirror_pt.z=pt.z-C.c/C.a*(pt.x-mirror_pt.x);
     // }
-    if(C.a==0 && C.b==0 && C.c==0)
+    if(abs(C.a)==0 && abs(C.b)==0 && abs(C.c)==0)
         exit(0);
     else
     {
         double t=-(C.a*pt.x+C.b*pt.y+C.c*pt.z+C.d)/(pow(C.a,2)+pow(C.b,2)+pow(C.c,2));
         mirror_pt.x=pt.x+2*t*C.a;
         mirror_pt.y=pt.y+2*t*C.b;
-        mirror_pt.z=pt.z+2*t+C.c;
+        mirror_pt.z=pt.z+2*t*C.c;  //it's so importmant .watch out your little mistake
     }
     return mirror_pt;
 }
@@ -56,28 +57,28 @@ void Mirror::get_mirrorpointcloud(string inputcloudfilename)
     for(int i=0;i<1;i++)
     {
         fin>>pp[i].x>>pp[i].y>>pp[i].z;
-		cout<<pp[i].x<<pp[i].y<<pp[i].z<<endl;
-        
     }
-	pp[1].x=pp[0].x+1;
+	pp[1].x=pp[0].x;
 	pp[1].y=pp[0].y+1;
 	pp[1].z=pp[0].z;
-
-	pp[2].x=pp[0].x+3;
-	pp[2].y=pp[0].y+6;
-	pp[2].z=pp[0].z;
+	pp[2].x=pp[0].x;
+	pp[2].y=pp[0].y+1;
+	pp[2].z=pp[0].z+1;
 
     //mirror_cloud->resize((2*ori_cloud->width,2*ori_cloud->height));
     Coefficient pc=get_panal(pp);
+	cout<<"the coeff is "<<pc.a<<' '<<pc.b<<' '<<pc.c<<' '<<pc.d<<endl;
     Coord mirror_pt;
     for(auto point:ori_cloud->points)
     {
         struct Coord pt={point.x,point.y,point.z};
        
         mirror_pt=get_mirrorpt(pt,pc);
-        //mirror_cloud->points.push_back(pcl::PointXYZ(point.x,point.y,point.z));
+        mirror_cloud->points.push_back(pcl::PointXYZ(point.x,point.y,point.z));
         mirror_cloud->points.push_back(pcl::PointXYZ(mirror_pt.x, mirror_pt.y, mirror_pt.z));    
     }
+	fin.close();
+	
     pcl::io::savePLYFileASCII("/home/yons/PointCloudRegistrationTool/res/mirror.ply", *mirror_cloud);
 
 }
