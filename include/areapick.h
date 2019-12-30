@@ -14,14 +14,10 @@
 #include <fstream>
 #include <algorithm>
 #include <time.h>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
 #include <vector>
 
 
 using namespace std;
-using namespace cv;
 typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloudT;
 
@@ -34,19 +30,19 @@ public:
 	virtual void loadInputcloud(string inputcloudfile);
 	virtual void stl_ply(string stl_path,string ply_path);
 	virtual void simpleViewer(string inputcloudfile);
-	
+	PointCloudT::Ptr get_picked_area();
+	PointCloudT::Ptr get_input_cloud();
 protected:
 	virtual void closeviewer(const pcl::visualization::KeyboardEvent& event, void* args);
 	virtual void pp_callback(const pcl::visualization::AreaPickingEvent& event, void* args);
 private:
 	PointCloudT::Ptr inputcloud;
+	PointCloudT::Ptr cloud_filtered;
 	boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer;
 	PointCloudT::Ptr clicked_points_3d;
 	int num ;
 	string cloudName;
 };
-
-
 
 
 class Pointspick:public AreaPick
@@ -58,6 +54,7 @@ public:
 	void stl_ply(string stl_path,string ply_path);
 	void simpleViewer(const string inputcloudfile);
 	int find_nexttolast(const string filepath);
+	PointCloudT::Ptr get_picked_points();
 protected:
 	void pp_callback(const pcl::visualization::PointPickingEvent& event, void*);
 private:

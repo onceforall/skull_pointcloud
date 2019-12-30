@@ -10,14 +10,15 @@
 
 const bool verbose=true;
 // Commandline Flags
-const std::string Registrator::DEFAULT_registration_technique("both");
+
+const std::string Registrator::DEFAULT_registration_technique("icp"); //icp for realsense
 const double Registrator::DEFAULT_residual_threshold(0.1);
 const int Registrator::DEFAULT_num_ksearch_neighbors(100);
 const double Registrator::DEFAULT_descriptor_radius(1.0);
-const double Registrator::DEFAULT_subsampling_radius(0.2);
+const double Registrator::DEFAULT_subsampling_radius(0.2);   //0.01 for realsense,change from 0.2 to 1.0
 const double Registrator::DEFAULT_consensus_inlier_threshold(0.2);
 const int Registrator::DEFAULT_consensus_max_iterations(100);
-const int Registrator::DEFAULT_icp_max_iterations(200);
+const int Registrator::DEFAULT_icp_max_iterations(100);
 const double Registrator::DEFAULT_icp_max_correspondence_distance(0.05);
 
 DEFINE_string(registration_technique, Registrator::DEFAULT_registration_technique, "what kind of registration technique to use, 'correspondence', 'icp', 'both'");
@@ -34,9 +35,10 @@ Registrator::Registrator() {
     
     s_cloud_ = PointCloudT::Ptr();
     t_cloud_ = PointCloudT::Ptr();
+    r_cloud_ = PointCloudT::Ptr(new PointCloudT);
+
     ori_s_cloud_ = PointCloudT::Ptr();
     ori_t_cloud_ = PointCloudT::Ptr();
-    r_cloud_ = PointCloudT::Ptr(new PointCloudT);
     ori_r_cloud_ = PointCloudT::Ptr(new PointCloudT);
 
   
@@ -225,7 +227,6 @@ void Registrator::computeNormals() {
             if(verbose) {
             std::cout << "Computed source cloud normals (" << s_cloud_normals_->size() << ")" << std::endl;
             }
-            
         }
         
         #pragma omp section
@@ -260,16 +261,17 @@ void Registrator::extractKeypoints() {
         std::cout << "Subsampled source cloud from " << s_cloud_->size() << " -> " << s_cloud_keypoints_->size() << std::endl;
     }
 
-    //random sampling 
-    //pcl::RandomSample<PointT> rs;
-    //rs.setInputCloud(t_cloud_);
-    //设置输出点的数量   
-    //rs.setSample(s_cloud_keypoints_->size()<t_cloud_->size()?s_cloud_keypoints_->size():(int)t_cloud_->size()/4);
+    // random sampling 
+    // pcl::RandomSample<PointT> rs;
+    // rs.setInputCloud(t_cloud_);
+    // 设置输出点的数量   
+    // rs.setSample(s_cloud_keypoints_->size()<t_cloud_->size()?s_cloud_keypoints_->size():(int)t_cloud_->size()/2);
  
-    //下采样并输出到cloud_out
-    //rs.filter(*t_cloud_keypoints_);
+    // 下采样并输出到cloud_out
+    // rs.filter(*t_cloud_keypoints_);
 
     //origin subsampling
+    //subsampling.setLeafSize (uniform_sampling_radius_, uniform_sampling_radius_, uniform_sampling_radius_);
     subsampling.setInputCloud(t_cloud_);
     subsampling.filter(*t_cloud_keypoints_);
    
@@ -277,7 +279,6 @@ void Registrator::extractKeypoints() {
         std::cout << "Subsampled target cloud from " << t_cloud_->size() << " -> " << t_cloud_keypoints_->size() << std::endl;
     }
 }
-
 
 /**
  Computes SHOT descriptors on keypoint cloud
@@ -299,7 +300,6 @@ void Registrator::computeDescriptors() {
             if(verbose) {
                 std::cout << "Computed " << s_cloud_descriptors_->size() << " descriptors on source cloud keypoints" << std::endl;
             }
-            
         }
 
         #pragma omp section
@@ -317,7 +317,6 @@ void Registrator::computeDescriptors() {
             }
         }
     }
-
 }
 
 
@@ -445,16 +444,15 @@ void Registrator::performRegistration(const std::string registration_technique) 
     else if(!is_correspondence_matching_complete_ && is_icp_complete_)
         pcl::transformPointCloud(*ori_s_cloud_, *ori_r_cloud_, icp_T_);
     else if(is_correspondence_matching_complete_ && is_icp_complete_) {
-        combined_T_ = icp_T_;
+        
         pcl::transformPointCloud(*ori_s_cloud_, *ori_r_cloud_, combined_T_);  
     }
-   
+    combined_T_ = icp_T_;
     //Save copy of registered point cloud to colorize
     pcl::copyPointCloud(*ori_r_cloud_, *r_cloud_rgb_);
     
     setRegisteredCloudToDefaultColor();
     colormap_residuals_->resize(getRegisteredToTargetResiduals()->size());
-    
 }
 
 /**
@@ -553,7 +551,6 @@ double Registrator::getFScoreAtThreshold(double threshold) {
 int Registrator::saveFinalTransform(const std::string filepath) {
     return util::writeMatrixToFile(getCombinedTransformation(), filepath);
 }
-
 
 /**
  Saves the f-score to 'filepath' at the given 'threshold'

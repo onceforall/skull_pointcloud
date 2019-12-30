@@ -49,6 +49,7 @@ AreaPick::AreaPick()
 {
 	inputcloud=PointCloudT::Ptr(new PointCloudT);
 	clicked_points_3d=PointCloudT::Ptr (new PointCloudT);
+	cloud_filtered=PointCloudT::Ptr (new PointCloudT);
 	cloudName = "AreaPick";	
 	num = 0;
 	
@@ -83,6 +84,13 @@ void AreaPick::loadInputcloud(string inputcloudfile)
 		}
 		std::cout<<"target cloud size: "<<inputcloud->size()<<std::endl;
 	}
+	pcl::VoxelGrid<PointT> sor;
+    sor.setInputCloud (inputcloud);
+    sor.setLeafSize (0.5f, 0.5f, 0.5f);
+    sor.filter (*cloud_filtered);
+	cout<<"Before filtering: "<<inputcloud->points.size()<<' ';
+	inputcloud=cloud_filtered;
+	cout<<" After: "<<inputcloud->points.size()<<endl;
 	return ;
 }
 
@@ -175,7 +183,6 @@ void AreaPick::stl_ply(string stl_path,string ply_path)
 		buffer[position++] = *((char*)(&vecSorted[i].z) + 3);
 	}
 
-
 	fileOut.write(buffer, numberOfPoints * 3 * 4);
 
 	free(buffer);
@@ -200,10 +207,8 @@ void AreaPick::stl_ply(string stl_path,string ply_path)
 			buffer[position++] = *((char*)(&index) + 1);
 			buffer[position++] = *((char*)(&index) + 2);
 			buffer[position++] = *((char*)(&index) + 3);
-
 		}
 	}
-
 
 	fileOut.write(buffer, numberOfFacets * 13);
 	free(buffer);
@@ -232,6 +237,7 @@ void  AreaPick::simpleViewer(string inputcloudfile)
 		viewer->spinOnce();
 		//boost::this_thread::sleep(boost::posix_time::microseconds(100000));
 	}
+	
 	pcl::io::savePLYFileASCII(inputcloudfile.substr(0,inputcloudfile.find_last_of('.')).append("_picked.ply"), *clicked_points_3d);
 	return;
 }
@@ -242,6 +248,7 @@ void AreaPick::closeviewer(const pcl::visualization::KeyboardEvent& event, void*
         viewer->~PCLVisualizer();
 
 }
+
 void AreaPick::pp_callback(const pcl::visualization::AreaPickingEvent& event, void* args)
 {
 	std::vector< int > indices;
@@ -265,6 +272,17 @@ void AreaPick::pp_callback(const pcl::visualization::AreaPickingEvent& event, vo
 	viewer->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 10, cloudName);
 	return;
 }
+
+PointCloudT::Ptr AreaPick::get_picked_area()
+{
+	return clicked_points_3d;
+}
+
+PointCloudT::Ptr AreaPick::get_input_cloud()
+{
+	return inputcloud;
+}
+
 
 
 Pointspick::Pointspick()
@@ -422,7 +440,6 @@ void Pointspick::stl_ply(string stl_path,string ply_path)
 			buffer[position++] = *((char*)(&index) + 1);
 			buffer[position++] = *((char*)(&index) + 2);
 			buffer[position++] = *((char*)(&index) + 3);
-
 		}
 	}
 
@@ -441,6 +458,7 @@ void Pointspick::stl_ply(string stl_path,string ply_path)
 void Pointspick::simpleViewer(const string inputcloudfile)
 {
 	//visualizer
+
 	viewer = boost::shared_ptr<pcl::visualization::PCLVisualizer>(new pcl::visualization::PCLVisualizer(cloudName));
 	viewer->addPointCloud(inputcloud, cloudName);
 	viewer->resetCameraViewpoint(cloudName);
@@ -514,4 +532,9 @@ int Pointspick::find_nexttolast(const string filepath)
 		}
 	}
 	return index;
+}
+
+PointCloudT::Ptr Pointspick::get_picked_points()
+{
+	return clicked_points_3d;
 }

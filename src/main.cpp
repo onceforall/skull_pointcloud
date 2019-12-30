@@ -11,6 +11,7 @@
 #endif
 
 // Standard
+#include <stdlib.h>
 #include <iostream>
 #include <iterator>
 #include <algorithm>
@@ -23,7 +24,6 @@
 #include "Registrator.hpp"
 #include "Visualizer.hpp"
 #include "areapick.h"
-#include "coords_rcg.h"
 #include "mirror.hpp"
 
 
@@ -116,12 +116,14 @@ int main () {
         
     }
 
-    string targetfilename = "/home/yons/PointCloudRegistrationTool/data/191119.ply";
-    string inputfilename="/home/yons/PointCloudRegistrationTool/data/simplify_Segment.ply";
+    string targetfilename = "/home/yons/projects/PointCloudRegistrationTool/data/191213.ply";
+    string inputfilename="/home/yons/projects/PointCloudRegistrationTool/data/simple_bone.ply";
 	
+    //string targetfilename = "/home/yons/projects/PointCloudRegistrationTool/data/wzx_skull.ply";
+    //string inputfilename="/home/yons/projects/PointCloudRegistrationTool/data/mirror.ply";
     AreaPick targetareapick;
     AreaPick inputareapick;
-    Pointspick inputpointspick;
+    Pointspick inputpointspick;                                     
     
     inputpointspick.loadInputcloud(targetfilename);
     inputpointspick.simpleViewer(targetfilename);
@@ -147,10 +149,11 @@ int main () {
             std::cout << "Executing in parallel" << std::endl;
     #endif
 
-
     
     for(FilepairVector::size_type i = 0; i < filepairs->size(); i++) 
     {
+        std::string source_cloud_filepath = filepairs->at(i).sourcefile;
+        #if 0
         PointCloudT::Ptr target_cloud (new PointCloudT);
         target_cloud->clear();
         std::string target_cloud_filepath = filepairs->at(i).targetfile;
@@ -191,7 +194,22 @@ int main () {
         
         if(!reads_successful)
             continue;
-        
+        #endif 
+
+
+        PointCloudT::Ptr target_cloud (new PointCloudT);
+        PointCloudT::Ptr source_cloud (new PointCloudT);
+        PointCloudT::Ptr ori_source_cloud (new PointCloudT);
+        PointCloudT::Ptr ori_target_cloud (new PointCloudT);
+        target_cloud->clear();
+        source_cloud->clear();
+        ori_target_cloud->clear();
+        ori_source_cloud->clear();
+
+        target_cloud=targetareapick.get_picked_area();
+        source_cloud=inputareapick.get_picked_area();
+        ori_target_cloud=targetareapick.get_input_cloud();
+        ori_source_cloud=inputareapick.get_input_cloud();
         //Extract prefix for output files
         std::string prefix = util::removeFileExtension(filepairs->at(i).sourcefile);
         int index=util::find_nexttolast(filepairs->at(i).sourcefile);
@@ -202,17 +220,17 @@ int main () {
         std::string residual_histogram_image_filepath;
         std::string fscore_filepath;
        
-     
+        #if 0
         if (FLAGS_transformation_matrix_filepath != "[source_filename]_transform.txt")
             transformation_matrix_filepath = FLAGS_transformation_matrix_filepath;
         else
             transformation_matrix_filepath = prefix + "_transform.txt";
+        #endif 
         if (FLAGS_registered_pointcloud_filepath != "[source_filename]_registered.ply")
             registered_pointcloud_filepath = FLAGS_registered_pointcloud_filepath;
         else
             registered_pointcloud_filepath = prefix + "_registered.ply";
         
-      
         if (FLAGS_residual_histogram_image_filepath != "[source_filename]_histogram.png")
             residual_histogram_image_filepath = FLAGS_residual_histogram_image_filepath;
         else
@@ -223,14 +241,14 @@ int main () {
         else
             fscore_filepath = prefix + "_fscore.txt";
        
-        
         //Ensure unique output filepaths
         #if 0
         if (util::ensureUniqueFilepath(transformation_matrix_filepath) != 0) {
             std::cout << "Failed to create transformation matrix file." << std::endl;
             continue;
         }
-        
+       
+
         if (util::ensureUniqueFilepath(fscore_filepath) != 0) {
             std::cout << "Failed to create f-score file." << std::endl;
             continue;
@@ -245,11 +263,10 @@ int main () {
             std::cout << "Failed to create residual histogram file." << std::endl;
             continue;
         }
-       #endif
-
-
+        #endif
         //Registration
         //Setup
+        Mirror mir;
         Registrator::Ptr registrator (new Registrator());
         registrator->setNumKSearchNeighbors(FLAGS_num_ksearch_neighbors);
         registrator->setDescriptorRadius(FLAGS_descriptor_radius);
@@ -271,6 +288,11 @@ int main () {
         registrator->saveResidualColormapPointCloud(registered_pointcloud_filepath);  //save residual color pointcloud
         if(registrator->saveFinalTransform(transformation_matrix_filepath)!=0)
             cout<<"Transform matrix saved error"<<endl;
+        else
+        {
+            cout<<"saved transformation txt!"<<endl;
+        }
+    
         registrator->saveFScoreAtThreshold(fscore_filepath, FLAGS_residual_threshold);  //save Fscore
         
         std::cout << "Registration of " << source_cloud_filepath << " finished" << std::endl;
@@ -279,6 +301,33 @@ int main () {
         
         if (!FLAGS_gui)
             continue;
+
+
+        #if 0  //add get symmetry panel coords
+        string coordsfile="/home/yons/projects/PointCloudRegistrationTool/res/coords.txt";
+        struct Coord clicked_p[3];
+        struct Coord mirrored_p[3];
+        Eigen::Matrix4f final_Matrix=registrator->getCombinedTransformation();
+        ofstream out_clicked("/home/yons/projects/PointCloudRegistrationTool/res/mirror_coords.txt",ios::binary | ios::out);
+        ifstream in_clicked(coordsfile);
+        if(!in_clicked) cout<<"Can't open "<<coordsfile<<endl;
+        else
+        {
+            for(int i=0;i<3;i++)
+            {
+                in_clicked>>clicked_p[i].x>>clicked_p[i].y>>clicked_p[i].z;
+                mirrored_p[i].x=final_Matrix(0,0)*clicked_p[i].x+final_Matrix(0,1)*clicked_p[i].y+final_Matrix(0,2)*clicked_p[i].z+final_Matrix(0,3);
+                mirrored_p[i].y=final_Matrix(1,0)*clicked_p[i].x+final_Matrix(1,1)*clicked_p[i].y+final_Matrix(1,2)*clicked_p[i].z+final_Matrix(1,3);
+                mirrored_p[i].z=final_Matrix(2,0)*clicked_p[i].x+final_Matrix(2,1)*clicked_p[i].y+final_Matrix(2,2)*clicked_p[i].z+final_Matrix(2,3);
+                cout<<clicked_p[i].x<<' '<<clicked_p[i].y<<' '<<clicked_p[i].z<<endl;
+                cout<<mirrored_p[i].x<<' '<<mirrored_p[i].y<<' '<<mirrored_p[i].z<<endl;
+                out_clicked<<(float)(clicked_p[i].x+mirrored_p[i].x)/2<<(float)(clicked_p[i].y+mirrored_p[i].y)/2<<(float)(clicked_p[i].z+mirrored_p[i].z)/2<<endl;
+                cout<<endl;
+            }
+            out_clicked.close();
+            in_clicked.close();
+        }
+        #endif
         
         //Visualization
         Visualizer visualizer ("Point Cloud Registration Tool");
@@ -288,7 +337,6 @@ int main () {
 
         inputpointspick.loadInputcloud(registered_pointcloud_filepath);
         inputpointspick.simpleViewer(registered_pointcloud_filepath);
-   
     }
     return 0;
 }

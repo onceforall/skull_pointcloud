@@ -36,7 +36,8 @@ namespace PRT {
         
         RGB(const uint8_t r, const uint8_t g, const uint8_t b) : r(r), g(g), b(b) {}
     };
-    
+
+
     typedef pcl::PointXYZ PointT;
     typedef pcl::PointCloud<PointT> PointCloudT;
     typedef pcl::Normal NormalT;
@@ -56,7 +57,6 @@ namespace PRT {
     typedef std::shared_ptr< StringVector > StringVectorPtr;
     typedef std::vector<filepair_t> FilepairVector;
     typedef std::shared_ptr< FilepairVector > FilepairVectorPtr;
-    
     
 }
 
