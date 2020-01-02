@@ -61,12 +61,12 @@ Registrator::Registrator() {
     icp_T_ = Eigen::Matrix4f::Identity();
     combined_T_ = Eigen::Matrix4f::Identity();
     
-    uniform_sampling_radius_ = 0.25; //change from 0.25 to 0.5
+    uniform_sampling_radius_ = 0.5; //change from 0.25 to 0.5
     descriptor_radius_ = 1;
     num_k_search_neighbors_ = 100;
     consensus_inlier_threshold_ = 0.5;
     consensus_max_iterations_ = 100;
-    icp_max_iterations_ = 200;                   //change from 100 to 200
+    icp_max_iterations_ = 100;                   //change from 100 to 200
     icp_max_correspondence_distance_ = 0.05;
     
     residual_threshold_ = 0.25;

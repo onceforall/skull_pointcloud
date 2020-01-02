@@ -15,7 +15,7 @@ set(HEADER_FILES ${HEADER_DIR}/mirror.hpp  ${HEADER_DIR}/types.hpp ${HEADER_DIR}
 option(WITH_OPENMP "WITH_OPENMP" ON)
 
 add_subdirectory(${EXTERN_DIR}/gflags)
-find_package(PCL 1.7 REQUIRED COMPONENTS common io kdtree features visualization recognition)
+find_package(PCL 1.8 REQUIRED COMPONENTS common io kdtree features visualization recognition)
 
 if(WITH_OPENMP)
 find_package(OpenMP)
